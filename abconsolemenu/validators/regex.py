@@ -1,6 +1,6 @@
 from re import match
 
-from consolemenu.validators.base import BaseValidator
+from abconsolemenu.validators.base import BaseValidator
 
 
 class RegexValidator(BaseValidator):

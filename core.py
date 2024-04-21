@@ -14,6 +14,8 @@ import feedparser
 import time
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 import re
+from xpilot import DrvTypes
+from abconsolemenu.validators.positiveint import PositiveIntValidator
 
 prompt: pu.PromptUtils = pu.PromptUtils(Screen())
 menus: list[ConsoleMenu] = []
@@ -49,15 +51,14 @@ def get_setting(code):
     return None
 
 def set_browser_driver():
-    global config_mode, user_key, user_token
     print("*********************")
     print("CHANGE BROWSER DRIVER")
     print("*********************\n")
     curr_val = get_setting('browser_driver')
     print(f"Current value: {curr_val}\n")
-    new_val = 'Chrome'
+    new_val = DrvTypes.DT_CHROME
     if curr_val == new_val:
-        new_val = 'Undetected Chrome'
+        new_val = DrvTypes.DT_UNDETECTEDCHROME
     res = prompt_for_bilateral_choice(f"Change valure to '{new_val}'?", 's', 'n')
     if (res == 's'):
         if set_rep.set_key_value('main', 'browser_driver', new_val):
@@ -67,6 +68,68 @@ def set_browser_driver():
             print("\n[ERROR] Setting save failed.")
     else:        
         print("\nNo changes have been made.")    
+    wait_key()
+
+def set_headless_browser():
+    print("*******************************")
+    print("ENABLE/DISABLE HEADLESS BROWSER")
+    print("*******************************\n")
+    curr_val = int(get_setting('headless'))
+    curr_val_desc = 'DISABLED'
+    new_val_desc = 'ENABLED'
+    new_val = 1
+    if curr_val:
+        curr_val_desc = 'ENABLED'
+        new_val_desc = 'DISABLED'
+        new_val = 0
+    print(f"Current value: {curr_val_desc}\n")
+    res = prompt_for_bilateral_choice(f"Change valure to '{new_val_desc}'?", 's', 'n')
+    if (res == 's'):
+        if set_rep.set_key_value('main', 'headless', new_val):
+            get_settings(user_key, user_token, True)
+            print(f"\nNew value setted: '{new_val_desc}'.")
+        else:    
+            print("\n[ERROR] Setting save failed.")
+    else:        
+        print("\nNo changes have been made.")    
+    wait_key()
+
+def set_min_start_delay():
+    print("***************")
+    print("MIN START DELAY")
+    print("***************\n")
+    curr_val = get_setting('min_start_delay')
+    print(f"Current value (seconds): {curr_val}\n")
+    v = PositiveIntValidator()
+    putils = pu.PromptUtils(Screen())
+    go_on: bool = True
+    while go_on:
+        new_val = putils.input(prompt=f"\nNew value (seconds):", default=curr_val, validators=v)
+        go_on = not new_val.validation_result
+    if set_rep.set_key_value('main', 'min_start_delay', new_val.input_string):
+        get_settings(user_key, user_token, True)
+        print(f"\nNew value setted: {new_val.input_string} seconds.")
+    else:    
+        print("\n[ERROR] Setting save failed.")
+    wait_key()
+
+def set_max_start_delay():
+    print("***************")
+    print("MAX START DELAY")
+    print("***************\n")
+    curr_val = get_setting('max_start_delay')
+    print(f"Current value (seconds): {curr_val}\n")
+    v = PositiveIntValidator()
+    putils = pu.PromptUtils(Screen())
+    go_on: bool = True
+    while go_on:
+        new_val = putils.input(prompt=f"\nNew value (seconds):", default=curr_val, validators=v)
+        go_on = not new_val.validation_result
+    if set_rep.set_key_value('main', 'max_start_delay', new_val.input_string):
+        get_settings(user_key, user_token, True)
+        print(f"\nNew value setted: {new_val.input_string} seconds.")
+    else:    
+        print("\n[ERROR] Setting save failed.")
     wait_key()
 
 def load_settings():

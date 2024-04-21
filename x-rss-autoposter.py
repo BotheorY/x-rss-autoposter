@@ -48,17 +48,17 @@ def main() -> None:
                                                         {
                                                             "title": "Enable/Disable Headless Browsing", 
                                                             "type": "func", 
-                                                            "exec": "core.get_mnu_delete_jobs"
+                                                            "exec": "core.set_headless_browser"
                                                         },                       
                                                         {
                                                             "title": "Min Start Delay", 
                                                             "type": "func", 
-                                                            "exec": "core.get_mnu_delete_jobs"
+                                                            "exec": "core.set_min_start_delay"
                                                         },
                                                         {
                                                             "title": "Max Start Delay", 
                                                             "type": "func", 
-                                                            "exec": "core.get_mnu_delete_jobs"
+                                                            "exec": "core.set_max_start_delay"
                                                         },
                                                         {
                                                             "title": "Min Posting Interval", 
