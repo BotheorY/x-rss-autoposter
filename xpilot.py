@@ -54,7 +54,7 @@ class XPilot:
 
     X_HOME: str = 'https://x.com/'
 
-    def __init__(self, driver_type: str = DrvTypes.DT_UNDETECTEDCHROME, headless: bool = True, login: str = None, password: str = None, secure_seed: str = None, sandbox: bool = True, max_random_delays: int = 30, proxies: list[str] = None):
+    def __init__(self, driver_type: str = DrvTypes.DT_UNDETECTEDCHROME, headless: bool = True, login: str = None, password: str = None, secure_seed: str = None, sandbox: bool = True, max_random_delays: int = 5, proxies: list[str] = None):
 
         def is_value_among_constants(value: str, my_class, case_insensitive: bool = False):
             class_attributes = [attr for attr in dir(my_class) if isinstance(getattr(my_class, attr), str)]
@@ -127,8 +127,8 @@ class XPilot:
                 self.__service = None
                 self.__driver = None
                 self.__browser = self.__web_driver.Chrome(headless=self.__headless, use_subprocess=False, options=options)
-            self.__wait = WebDriverWait(self.__browser, 10)
-            self.__browser.implicitly_wait(30)
+            self.__wait = WebDriverWait(self.__browser, 5)
+            self.__browser.implicitly_wait(2)
             self.__browser.get(self.X_HOME)
             cookies_btn = try_find_element(self.__browser, By.XPATH, '//div[@data-testid="BottomBar"]')
             if cookies_btn:
@@ -213,7 +213,8 @@ class XPilot:
                 cookies_btn.click()
                 self.__rnd_wait()
             login_btn = try_find_element(self.__browser, By.XPATH, '//a[@data-testid="loginButton"]')
-            self.__wait.until(try_click(login_btn))
+#            self.__wait.until(try_click(login_btn))
+            login_btn.click()
             self.__rnd_wait()
             login_input = try_find_element(self.__browser, By.NAME, 'text')
             input_act_container = login_input.find_element(By.XPATH, "./..").find_element(By.XPATH, "./..").find_element(By.XPATH, "./..").find_element(By.XPATH, "./..")
@@ -237,11 +238,10 @@ class XPilot:
                 self.__wait.until(EC.url_changes(current_url))
             except Exception as e:
                 ...
-            sleep(5)        
+            self.__rnd_wait()
             current_url = self.__browser.current_url
             close_btn = try_find_element(self.__browser, By.XPATH, '//div[@data-testid="app-bar-close"]')
             if close_btn:
-                self.__rnd_wait()
                 close_btn.click()
             if 'home' in current_url:
                 self.__logged = True
