@@ -1,5 +1,5 @@
 from setrepcli import SetRepClient
-from utilities import wait_key, add_item_to_menus, remove_item_from_menus, is_integer, is_time_format
+from utilities import wait_key, add_item_to_menus, remove_item_from_menus, is_integer, is_time_format, prompt_for_bilateral_choice
 from abconsolemenu import *
 from abconsolemenu.items import *
 from abconsolemenu import prompt_utils as pu
@@ -18,6 +18,18 @@ import re
 prompt: pu.PromptUtils = pu.PromptUtils(Screen())
 menus: list[ConsoleMenu] = []
 
+SETTING_DFT =   [
+                    {'code': 'browser_driver', 'value': 'Undetected Chrome'}, 
+                    {'code': 'headless', 'value': '1'}, 
+                    {'code': 'log_enabled', 'value': '0'}, 
+                    {'code': 'min_start_delay', 'value': '180'}, 
+                    {'code': 'max_start_delay', 'value': '1800'}, 
+                    {'code': 'min_n_rss_items_to_post', 'value': '1'}, 
+                    {'code': 'max_n_rss_items_to_post', 'value': '1'}, 
+                    {'code': 'min_posting_interval', 'value': '60'}, 
+                    {'code': 'max_posting_interval', 'value': '600'}, 
+                ]
+
 user_key: str = ''
 user_token: str = ''
 set_rep: SetRepClient = None
@@ -29,10 +41,39 @@ config_mode: bool = True
 
 last_read_feed_rss_error: str = None
 
+def get_setting(code):
+    global settings
+    for d in settings:
+        if d.get('code') == code:
+            return d.get('value')
+    return None
+
+def set_browser_driver():
+    global config_mode, user_key, user_token
+    print("*********************")
+    print("CHANGE BROWSER DRIVER")
+    print("*********************\n")
+    curr_val = get_setting('browser_driver')
+    print(f"Current value: {curr_val}\n")
+    new_val = 'Chrome'
+    if curr_val == new_val:
+        new_val = 'Undetected Chrome'
+    res = prompt_for_bilateral_choice(f"Change valure to '{new_val}'?", 's', 'n')
+    if (res == 's'):
+        if set_rep.set_key_value('main', 'browser_driver', new_val):
+            get_settings(user_key, user_token, True)
+            print(f"\nNew value setted: '{new_val}'.")
+        else:    
+            print("\n[ERROR] Setting save failed.")
+    else:        
+        print("\nNo changes have been made.")    
+    wait_key()
+
 def load_settings():
     global config_mode, user_key, user_token
     try:
         if len(sys.argv) > 1:
+            config_mode = False
             for par in sys.argv[1:]:
                 par = par.strip()
                 if par == '-s':
@@ -51,16 +92,25 @@ def load_settings():
         if str(e):
             print(f"[ERROR] {str(e)}")
 
+def apply_settings_dft():
+    global settings, SETTING_DFT
+    for setting in settings:
+        for default in SETTING_DFT:
+            if (setting['code'] == default['code']) and (setting['value'] is None):
+                setting['value'] = default['value']
+    
 def mnu_add_to_list(menu: ConsoleMenu) -> None:
     if menu:
         menus.append(menu)
 
-def get_settings(user_key: str, user_token: str) -> list:
+def get_settings(user_key: str, user_token: str, silent: bool = False):
     global set_rep, settings, accounts, feeds
-    print("Loading settings...")
+    if not silent:
+        print("Loading settings...")
     try:
         set_rep = SetRepClient(SETREP_BASE_URL, user_key, user_token, APP_CODE)
         settings = set_rep.get_section_keys_values('main')
+        apply_settings_dft()
         json_accounts = set_rep.get_key_value('main', 'x_accounts')
         if json_accounts:
             accounts = json.loads(json_accounts)
@@ -70,9 +120,11 @@ def get_settings(user_key: str, user_token: str) -> list:
     except Exception as e:
         set_rep = None
         if str(e):
-            print(f"[ERROR] {str(e)}")
+            if not silent:
+                print(f"[ERROR] {str(e)}")
     finally:
-        print("Loading settings finished.")
+        if not silent:
+            print("Loading settings finished.")
 
 def str_to_groups_list(grp: str):
     grp = grp.strip()
@@ -313,6 +365,11 @@ def apply_model(model_code: str, replacements: dict)-> str:
     return model_content
 
 def start():
+    print(settings)
+    if config_mode:
+        wait_key()
+    return
+
     from xpilot import XPilot
     browser = XPilot(login='BarbagalloA', password='kim62330', headless=False)
     try:
@@ -326,5 +383,14 @@ def start():
 #        browser = None
         ...
     ...
-    wait_key()
+
+    if config_mode:
+        wait_key()
+
+    return
+    print(">>> Start posting RSS items... <<<")
+    for job_index, job in enumerate(core.accounts):
+        ...
+    print(">>> Posting RSS items completed. <<<")
+
 

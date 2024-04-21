@@ -48,7 +48,7 @@ def try_click(element: WebElement) -> Callable[[Any], bool]:
 
 class DrvTypes:
     DT_CHROME: str = 'Chrome'
-    DT_UNDETECTEDCHROME: str = 'UChrome'
+    DT_UNDETECTEDCHROME: str = 'Undetected Chrome'
 
 class XPilot:
 

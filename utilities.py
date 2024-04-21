@@ -90,3 +90,6 @@ def ab_log(message: str, print_msg: bool = True):
                 log_file.write(full_message.encode('utf-8').decode('utf-8'))
     except Exception as e:
         ...
+
+def prompt_for_bilateral_choice(prompt, option1, option2):
+    return PromptUtils(Screen()).prompt_for_bilateral_choice(prompt, option1, option2)
